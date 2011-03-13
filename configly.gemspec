@@ -26,6 +26,7 @@ Gem::Specification.new do |s|
     "README.rdoc",
     "Rakefile",
     "VERSION",
+    "configly.gemspec",
     "lib/configly.rb",
     "spec/configly_spec.rb",
     "spec/spec_helper.rb"
