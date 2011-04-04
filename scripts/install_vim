@@ -1,0 +1,79 @@
+#!/usr/bin/env bash
+
+function check_root() {
+    if [ "$(whoami)" != "root" ]; then
+        echo "Need to be root to run $0"
+        exit 1
+    fi
+}
+
+function install_prerequisites() {
+
+    if [ -e /usr/local/rvm/scripts/rvm ]; then
+      source /usr/local/rvm/scripts/rvm
+    else
+      echo "Need to install RVM"
+      exit 1
+    fi
+
+    prerequisites="build-essential libncurses-dev libgnome2-dev libgtk2.0-dev libatk1.0-dev libbonoboui2-dev libcairo2-dev libx11-dev libxpm-dev libxt-dev"
+    to_install=""
+
+    for package in $prerequisites; do
+        package_installed=$(dpkg -l | grep \ $package)
+        if [ -z "$package_installed" ]; then
+            to_install="$to_install $package"
+        fi
+    done
+
+    apt-get -y install $to_install
+}
+
+function download_source() {
+    rm -f /usr/local/src/vim-7.3.tar.bz2
+    rm -rf /usr/local/src/vim73
+    curl "ftp://ftp.vim.org/pub/vim/unix/vim-7.3.tar.bz2" > /usr/local/src/vim-7.3.tar.bz2
+    tar -C /usr/local/src/ -jxvf /usr/local/src/vim-7.3.tar.bz2
+}
+
+function configure() {
+    cd /usr/local/src/vim73
+    ./configure --with-features=huge --enable-multibyte --enable-rubyinterp --enable-pythoninterp --enable-gui=gnome2 --with-x  --with-compiledby="Peter Coulton <hi@pcltn.me>" 
+
+    if [ $? -gt 0 ]; then
+        exit $?
+    fi
+}
+
+function make_and_install() {
+    cd /usr/local/src/vim73
+    make && make install
+
+    if [ $? -gt 0 ]; then
+        exit $?
+    fi
+}
+
+function install_man_files() {
+    echo -n
+}
+
+source /usr/local/rvm/scripts/rvm
+
+check_root
+
+install_prerequisites
+
+download_source
+
+configure
+
+make_and_install
+
+install_man_files
+
+
+
+
+#
+

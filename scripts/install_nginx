@@ -1,0 +1,19 @@
+#!/usr/bin/env bash
+
+function install_prerequisites() {
+  prerequisites="build-essential "
+  to_install=""
+  
+  for package in $prerequisites; do
+    package_installed=$(dpkg -l | grep \ $package)
+    if [ -z "$package_installed" ]; then
+      to_install="$to_install $package"
+    fi
+  done
+  
+  apt-get -y install $to_install
+}
+
+install_prerequisites
+
+

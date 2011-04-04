@@ -1,0 +1,69 @@
+#!/usr/bin/env bash
+
+function check_root() {
+  if [ "$(whoami)" != "root" ]; then
+    echo "Need to be root to run $0"
+    exit 1
+  fi
+}
+
+function install_prerequisites() {
+  prerequisites="build-essential zlib1g-dev curl libcurl4-openssl-dev expat libexpat-dev tk8.5 perl libperl-dev"
+  to_install=""
+  
+  for package in $prerequisites; do
+    package_installed=$(dpkg -l | grep \ $package)
+    if [ -z "$package_installed" ]; then
+      to_install="$to_install $package"
+    fi
+  done
+  
+  apt-get -y install $to_install
+}
+
+function download_source() {
+  rm -f /usr/local/src/git-1.7.4.1.tar.bz2
+  rm -rf /usr/local/src/git-1.7.4.1
+  curl "http://kernel.org/pub/software/scm/git/git-1.7.4.1.tar.bz2" > /usr/local/src/git-1.7.4.1.tar.bz2
+  tar -C /usr/local/src -jxvf /usr/local/src/git-1.7.4.1.tar.bz2 
+}
+
+function configure_and_install() {
+  cd /usr/local/src/git-1.7.4.1
+  ./configure && make && make install
+  
+  if [ $? -gt 0 ]; then
+    exit $?
+  fi
+}
+
+function install_man_files() {
+  cd /usr/local/src/git-1.7.4.1
+  rm -rf /usr/local/src/git-1.7.4.1/manual
+  mkdir manual && cd manual
+  git init
+  git fetch-pack git://git.kernel.org/pub/scm/git/git.git man html |
+  while read a b
+  do
+    echo $a >.git/$b
+  done
+  cp .git/refs/heads/man .git/refs/heads/master
+  git checkout
+  cp -R man* /usr/local/share/man
+}
+
+check_root
+
+install_prerequisites
+
+download_source
+
+configure_and_install
+
+install_man_files
+
+
+
+
+#
+

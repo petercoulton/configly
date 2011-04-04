@@ -1,0 +1,38 @@
+#!/usr/bin/env bash
+
+function check_root() {
+    if [ "$(whoami)" != "root" ]; then
+        echo "Need to be root to run $0"
+        exit 1
+    fi
+}
+
+
+
+function install_prerequisites() {
+    prerequisites="bash curl build-essential bison openssl libreadline6 libreadline6-dev curl zlib1g zlib1g-dev libssl-dev libyaml-dev libsqlite3-0 libsqlite3-dev sqlite3 libxml2-dev libxslt-dev autoconf libc6-dev ncurses-dev"
+    to_install=""
+
+    for package in $prerequisites; do
+        package_installed=$(dpkg -l | grep \ $package)
+        if [ -z "$package_installed" ]; then
+            to_install="$to_install $package"
+        fi
+    done
+
+    apt-get -y install $to_install
+}
+
+function install_rvm() {
+    bash < <( curl http://rvm.beginrescueend.com/releases/rvm-install-head )
+}
+
+check_root
+
+install_prerequisites
+
+install_rvm
+
+
+#
+
